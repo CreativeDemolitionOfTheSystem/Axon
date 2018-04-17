@@ -1,1 +1,1 @@
-# Credits to Africaus :D
+# Credits to Africanus :D
