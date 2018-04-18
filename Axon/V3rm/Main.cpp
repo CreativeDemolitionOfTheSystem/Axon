@@ -16,12 +16,12 @@ using namespace std;
 
 
 DWORD ScriptContext;
-DWORD ScriptContextVFTable = x(0x102D334);
+DWORD ScriptContextVFTable = x(0x110D470);
 
 DWORD grabGlobalStateIndex(DWORD ScriptContext, int idx)
 {
 	DWORD* context = reinterpret_cast<DWORD*>(ScriptContext);
-	return context[idx] ^ (DWORD)&context[idx];
+	return context[idx] - (DWORD)&context[idx];
 }
 
 using Bridge::m_rL;
@@ -52,14 +52,14 @@ DWORD WINAPI input(PVOID lvpParameter)
 {
 	string WholeScript = "";
 	HANDLE hPipe;
-	char buffer[1024];
+	char buffer[999999];
 	DWORD dwRead;
-	hPipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\RWrapper"),
+	hPipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\HexusLua"),
 		PIPE_ACCESS_DUPLEX | PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
 		PIPE_WAIT,
 		1,
-		1024 * 16,
-		1024 * 16,
+		999999,
+		999999,
 		NMPWAIT_USE_DEFAULT_WAIT,
 		NULL);
 	while (hPipe != INVALID_HANDLE_VALUE)
@@ -254,14 +254,14 @@ static int UserDataGC(lua_State *Thread) {
 }
 void main()
 {
-	CONSOLEBYPASS();
+	/*CONSOLEBYPASS();
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONIN$", "r", stdin);
 	HWND ConsoleHandle = GetConsoleWindow();
 	SetWindowPos(ConsoleHandle, HWND_TOPMOST, 50, 20, 0, 0, SWP_DRAWFRAME | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 	ShowWindow(ConsoleHandle, 1);
-	SetConsoleTitle("RVX-4 - LEVEL 6 DEBUG CONSOLE.");
-	MessageBoxA(NULL, "hostthingie", "hostthingie", NULL);
+	SetConsoleTitle("RVX-4 - LEVEL 6 DEBUG CONSOLE.");*/
+	/*MessageBoxA(NULL, "hostthingie", "hostthingie", NULL);
 	char HostsPath[260];
 	GetSystemDirectory(HostsPath, MAX_PATH);
 	lstrcat(HostsPath, "\\drivers\\etc\\HOSTS");
@@ -286,46 +286,50 @@ void main()
 		}
 	}
 
-	MessageBoxA(NULL, "hostthingie passed", "hostthingie", NULL);
+	MessageBoxA(NULL, "hostthingie passed", "hostthingie", NULL);*/
 
-	MessageBoxA(NULL, "ScriptContext", "ScriptContext", NULL);
-
+	//MessageBoxA(NULL, "ScriptContext", "ScriptContext", NULL);
+	printf("ScriptContext\r\n");
 	ScriptContext = ScanForScriptContext((char*)&ScriptContextVFTable);
 	if (!ScriptContext)
 	{
 		MessageBoxA(NULL, "Scan failed ScriptContextVirtualTable", "Error", MB_OK);
 	}
-	MessageBoxA(NULL, "ScriptContext passed", "ScriptContext passed", NULL);
-
-
-	MessageBoxA(NULL, "globalindex", "globalindex", NULL);
+	//MessageBoxA(NULL, "ScriptContext passed", "ScriptContext passed", NULL);
+	printf("ScriptContext passed\r\n");
+	printf("globalindex\r\n");
+	//MessageBoxA(NULL, "globalindex", "globalindex", NULL);
 	m_rL = grabGlobalStateIndex(ScriptContext, 41);
 
 	if (!m_rL)
 	{
 		MessageBoxA(NULL, "Scan failed Globalstateindex", "Error", MB_OK);
 	}
-	MessageBoxA(NULL, "globalindex passed", "globalindex passed", NULL);
-	
-	MessageBoxA(NULL, "newstate", "newstate", NULL);
+	//MessageBoxA(NULL, "globalindex passed", "globalindex passed", NULL);
+	printf("globalindex passed\r\n");
+	printf("newstate\r\n");
+	//MessageBoxA(NULL, "newstate", "newstate", NULL);
 	m_L = luaL_newstate();
-	MessageBoxA(NULL, "newstate passed", "newstate passed", NULL);
-
-	MessageBoxA(NULL, "identity", "identity", NULL);
+	//MessageBoxA(NULL, "newstate passed", "newstate passed", NULL);
+	printf("newstate passed\r\n");
+	printf("identity\r\n");
+	//MessageBoxA(NULL, "identity", "identity", NULL);
 	r_setidentity(m_rL, 6);
-	MessageBoxA(NULL, "identity passed", "identity passed", NULL);
-
-	MessageBoxA(NULL, "vehhand", "vehhand", NULL);
+	//MessageBoxA(NULL, "identity passed", "identity passed", NULL);
+	printf("identity passed\r\n");
+	printf("vehhand\r\n");
+	//MessageBoxA(NULL, "vehhand", "vehhand", NULL);
 	Bridge::VehHandlerpush();
-	MessageBoxA(NULL, "vehhand passed", "vehhand passed", NULL);
-
-	MessageBoxA(NULL, "openlibs", "openlibs", NULL);
+	//MessageBoxA(NULL, "vehhand passed", "vehhand passed", NULL);
+	printf("vehhand passed\r\n");
+	printf("openlibs\r\n");
+	//MessageBoxA(NULL, "openlibs", "openlibs", NULL);
 
 	luaL_openlibs(m_L);
-	MessageBoxA(NULL, "openlibs passed", "openlibs passed", NULL);
+	//MessageBoxA(NULL, "openlibs passed", "openlibs passed", NULL);
+	printf("openlibs passed\r\n");
 	
-	
-	if (!ADDRESS_GETFIELD)
+	/*if (!ADDRESS_GETFIELD)
 	{
 		MessageBoxA(NULL, "Scan failed lua getfield", "Error", MB_OK);
 	}
@@ -373,31 +377,37 @@ void main()
 	if (!ADDRESS_SETTOP)
 	{
 		MessageBoxA(NULL, "Scan failed lua settop", "Error", MB_OK);
-	}
+	}*/
 	
-
-	MessageBoxA(NULL, "initialziing shit", "initialziing shit", NULL);
+	printf("initialziing shit\r\n");
+	//MessageBoxA(NULL, "initialziing shit", "initialziing shit", NULL);
 	luaL_newmetatable(m_L, "garbagecollector");  
-	MessageBoxA(NULL, "success 1", "success 1", NULL);
+	printf("success 1\r\n");
+	//MessageBoxA(NULL, "success 1", "success 1", NULL);
 	lua_pushcfunction(m_L, UserDataGC); 
-	MessageBoxA(NULL, "success 2", "success 2", NULL);
+	printf("success 2\r\n");
+	//MessageBoxA(NULL, "success 2", "success 2", NULL);
 	lua_setfield(m_L, -2, "__gc");    
-	MessageBoxA(NULL, "success 3", "success 4", NULL);
+	printf("success 3\r\n");
+	//MessageBoxA(NULL, "success 3", "success 4", NULL);
 
 	lua_pushvalue(m_L, -1);
-	MessageBoxA(NULL, "success 4", "success 4", NULL);
+	printf("success 4\r\n");
+	//MessageBoxA(NULL, "success 4", "success 4", NULL);
 	lua_setfield(m_L, -2, "__index");
-	MessageBoxA(NULL, "success 5", "success 5", NULL);
+	printf("success 5\r\n");
+	//MessageBoxA(NULL, "success 5", "success 5", NULL);
 
 
-
-	MessageBoxA(NULL, "does pushglobal work?", "question  of the day", NULL);
+	printf("does pushglobal work?\r\n");
+	//MessageBoxA(NULL, "does pushglobal work?", "question  of the day", NULL);
 	PushGlobal(m_rL, m_L, "printidentity");
 	PushGlobal(m_rL, m_L, "game");
 	PushGlobal(m_rL, m_L, "Game");
 	PushGlobal(m_rL, m_L, "workspace");
 	PushGlobal(m_rL, m_L, "Workspace");
-	MessageBoxA(NULL, "yep they do", "yes indeed", NULL);
+	printf("yep they do\r\n");
+	//MessageBoxA(NULL, "yep they do", "yes indeed", NULL);
 
 	PushGlobal(m_rL, m_L, "Axes");
 	PushGlobal(m_rL, m_L, "BrickColor");
@@ -444,7 +454,8 @@ void main()
 
 	lua_newtable(m_L);
 	lua_setglobal(m_L, "_G");
-	MessageBoxA(NULL, "DONE SHIT", "DONE SHIT", NULL);
+	//MessageBoxA(NULL, "DONE SHIT", "DONE SHIT", NULL);
+	printf("DONE SHIT\r\n");
 
 
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)input, NULL, NULL, NULL);

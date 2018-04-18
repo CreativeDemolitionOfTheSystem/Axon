@@ -9,6 +9,7 @@ extern "C" {
 #include "Lua\lualib.h"
 #include "Lua\lauxlib.h"
 #include "Lua\luaconf.h"
+#include "Lua\llimits.h"
 }
 
 
@@ -29,7 +30,7 @@ namespace Bridge
 	VOID VehHandlerpush();
 	std::vector<int> int3breakpoints;
 	int resumea(DWORD thread);
-	int resumea(DWORD thread);
+	//int resumea(DWORD thread);
 }
 
 
@@ -45,12 +46,14 @@ namespace Bridge
 		{
 			if (ex->ContextRecord->Eip == int3breakpoints[0])
 			{
+				//MessageBoxA(NULL, "rbxFunctionBridge", "rbxFunctionBridge", NULL);
 				ex->ContextRecord->Eip = (DWORD)(Bridge::rbxFunctionBridge);
 				return EXCEPTION_CONTINUE_EXECUTION;
 			}
 
 			if (ex->ContextRecord->Eip == int3breakpoints[1])
 			{
+				//MessageBoxA(NULL, "resumeaaaa", "resumeaaaaa", NULL);
 				ex->ContextRecord->Eip = (DWORD)(Bridge::resumea);
 				return EXCEPTION_CONTINUE_EXECUTION;
 			}
@@ -61,17 +64,24 @@ namespace Bridge
 		return 0;
 	}
 
-
-
-
-
+	DWORD locateINT3() {
+		DWORD _s = x(0x400000);
+		const char i3_8opcode[8] = { 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC };
+		for (int i = 0; i < MAX_INT; i++) {
+			if (memcmp((void*)(_s + i), i3_8opcode, sizeof(i3_8opcode)) == 0) {
+				return (_s + i);
+			}
+		}
+		return NULL;
+	}
 
 	VOID VehHandlerpush()
 	{
-		int3breakpoints.push_back(x(0x72C69C));
-		int3breakpoints.push_back(x(0x72CC3B));
+		/*int3breakpoints.push_back(x(0x72FD3F));
+		int3breakpoints.push_back(x(0x7301EB));*/
+		int3breakpoints.push_back(locateINT3());
+		int3breakpoints.push_back(locateINT3());
 		AddVectoredExceptionHandler(1, vehHandler);
-
 	}
 
 
@@ -91,48 +101,49 @@ namespace Bridge
 
 	void push(lua_State* L, DWORD rL, int index)
 	{
+		printf("ROBLOX: %d\n", lua_type(L, index));
 		switch (lua_type(L, index))
 		{
 		case LUA_TLIGHTUSERDATA:
-			MessageBoxA(NULL, "WLIGHTUSER", "WLIGHTUSER", NULL);
+			//MessageBoxA(NULL, "WLIGHTUSER", "WLIGHTUSER", NULL);
 			r_lua_pushlightuserdata(rL, nullptr);
-			MessageBoxA(NULL, "WLIGHTUSER  F", "WLIGHTUSER FF", NULL);
+			//MessageBoxA(NULL, "WLIGHTUSER  F", "WLIGHTUSER FF", NULL);
 
 			break;
 		case LUA_TNIL:
-			MessageBoxA(NULL, "WTNIL", "WTNIL", NULL);
+			//MessageBoxA(NULL, "WTNIL", "WTNIL", NULL);
 			r_lua_pushnil(rL);
-			MessageBoxA(NULL, "WTNIL F", "WTNIL F", NULL);
+			//MessageBoxA(NULL, "WTNIL F", "WTNIL F", NULL);
 			break;
 		case LUA_TNUMBER:
-			MessageBoxA(NULL, "WTNUMB", "WTNUMB", NULL);
+			//MessageBoxA(NULL, "WTNUMB", "WTNUMB", NULL);
 			r_lua_pushnumber(rL, lua_tonumber(L, index));
-			MessageBoxA(NULL, "WTNUMB F", "WTNUMB F", NULL);
+			//MessageBoxA(NULL, "WTNUMB F", "WTNUMB F", NULL);
 			break;
 		case LUA_TBOOLEAN:
-			MessageBoxA(NULL, "WTBOOL", "WTBOOL", NULL);
+			//MessageBoxA(NULL, "WTBOOL", "WTBOOL", NULL);
 			r_lua_pushboolean(rL, lua_toboolean(L, index));
-			MessageBoxA(NULL, "WTBOOL F", "WTBOOL F", NULL);
+			//MessageBoxA(NULL, "WTBOOL F", "WTBOOL F", NULL);
 			break;
 		case LUA_TSTRING:
-			MessageBoxA(NULL, "WTSTRING", "WTSTRING", NULL);
+			//MessageBoxA(NULL, "WTSTRING", "WTSTRING", NULL);
 			r_lua_pushstring(rL, lua_tostring(L, index));
-			MessageBoxA(NULL, "WTSTRING F", "WTSTRING F", NULL);
+			//MessageBoxA(NULL, "WTSTRING F", "WTSTRING F", NULL);
 			break;
 		case LUA_TTHREAD:
-			MessageBoxA(NULL, "WTTHREAD", "WTTHREAD", NULL);
+			//MessageBoxA(NULL, "WTTHREAD", "WTTHREAD", NULL);
 			r_lua_newthread(rL);
-			MessageBoxA(NULL, "WTTHREAD F", "WTTHREAD F", NULL);
+			//MessageBoxA(NULL, "WTTHREAD F", "WTTHREAD F", NULL);
 			break;
 		case LUA_TFUNCTION:
-			MessageBoxA(NULL, "WTFUNCTION", "WTFUNCTION", NULL);
+			//MessageBoxA(NULL, "WTFUNCTION", "WTFUNCTION", NULL);
 			lua_pushvalue(L, index);
 			r_lua_pushnumber(rL, luaL_ref(L, LUA_REGISTRYINDEX));
 			r_lua_pushcclosure(rL, Bridge::int3breakpoints[0], 1);
-			MessageBoxA(NULL, "WTFUNCTION f", "WTFUNCTION f", NULL);
+			//MessageBoxA(NULL, "WTFUNCTION f", "WTFUNCTION f", NULL);
 			break;
 		case LUA_TTABLE:
-			MessageBoxA(NULL, "WTTABLE", "WTTABLE", NULL);
+			//MessageBoxA(NULL, "WTTABLE", "WTTABLE", NULL);
 			lua_pushvalue(L, index);
 			r_lua_newtable(rL);
 			lua_pushnil(L);
@@ -144,10 +155,10 @@ namespace Bridge
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);
-			MessageBoxA(NULL, "WTTABLE F", "WTTABLE F", NULL);
+			//MessageBoxA(NULL, "WTTABLE F", "WTTABLE F", NULL);
 			break;
 		case LUA_TUSERDATA:
-			MessageBoxA(NULL, "wTUSERDATA", "wTUSERDATA", NULL);
+			//MessageBoxA(NULL, "wTUSERDATA", "wTUSERDATA", NULL);
 			lua_pushvalue(L, index);
 			lua_gettable(L, LUA_REGISTRYINDEX);
 			if (!lua_isnil(L, -1))
@@ -155,53 +166,57 @@ namespace Bridge
 			else
 				r_lua_newuserdata(rL, 0);
 			lua_pop(L, 1);
-			MessageBoxA(NULL, "wTUSERDATA F", "wTUSERDATA F", NULL);
+			//MessageBoxA(NULL, "wTUSERDATA F", "wTUSERDATA F", NULL);
 			break;
 		default: break;
 		}
 	}
 	void push(DWORD rL, lua_State* L, int index)
 	{
+		printf("VANILLA: %d\r\n", r_lua_type(rL, index));
 		switch (r_lua_type(rL, index))
 		{
 		case R_LUA_TLIGHTUSERDATA:
-			MessageBoxA(NULL, "LIGHTUSER", "LIGHTUSER", NULL);
+			//MessageBoxA(NULL, "LIGHTUSER", "LIGHTUSER", NULL);
 			lua_pushlightuserdata(L, nullptr);
-			MessageBoxA(NULL, "LIGHTUSER F ", "LIGHTUSER F", NULL);
+			//MessageBoxA(NULL, "LIGHTUSER F ", "LIGHTUSER F", NULL);
 			break;
 		case R_LUA_TNIL:
-			MessageBoxA(NULL, "TNIL", "TNIL", NULL);
+			//MessageBoxA(NULL, "TNIL", "TNIL", NULL);
 			lua_pushnil(L);
-			MessageBoxA(NULL, "TNIL F", "TNIL F ", NULL);
+			//MessageBoxA(NULL, "TNIL F", "TNIL F ", NULL);
 			break;
 		case R_LUA_TNUMBER:
-			MessageBoxA(NULL, "TNUMBER", "TNUMBER", NULL);
+			//MessageBoxA(NULL, "TNUMBER", "TNUMBER", NULL);
 			lua_pushnumber(L, r_lua_tonumber(rL, index));
-			MessageBoxA(NULL, "TNUMBER F", "TNUMBER F", NULL);
+			//MessageBoxA(NULL, "TNUMBER F", "TNUMBER F", NULL);
 			break;
 		case R_LUA_TBOOLEAN:
-			MessageBoxA(NULL, "TBOOLEAN", "TBOOLEAN", NULL);
+			//MessageBoxA(NULL, "TBOOLEAN", "TBOOLEAN", NULL);
 			lua_pushboolean(L, r_lua_toboolean(rL, index));
-			MessageBoxA(NULL, "TBOOLEAN F ", "TBOOLEAN F", NULL);
+			//MessageBoxA(NULL, "TBOOLEAN F ", "TBOOLEAN F", NULL);
 			break;
 		case R_LUA_TSTRING:
-			MessageBoxA(NULL, "TSTRING", "TSTRING", NULL);
+			//MessageBoxA(NULL, "TSTRING", "TSTRING", NULL);
 			lua_pushstring(L, r_lua_tostring(rL, index));
-			MessageBoxA(NULL, "TSTRING F ", "TSTRING F", NULL);
+			//MessageBoxA(NULL, "TSTRING F ", "TSTRING F", NULL);
 			break;
 		case R_LUA_TTHREAD:
-			MessageBoxA(NULL, "TTHREAD", "TTHREAD", NULL);
+			//MessageBoxA(NULL, "TTHREAD", "TTHREAD", NULL);
 			lua_newthread(L);
-			MessageBoxA(NULL, "TTHREAD F", "TTHREAD F", NULL);
+			//MessageBoxA(NULL, "TTHREAD F", "TTHREAD F", NULL);
 			break;
 		case R_LUA_TFUNCTION:
-			MessageBoxA(NULL, "TFUNCTION", "TFUNCTION", NULL);
+			//MessageBoxA(NULL, "TFUNCTION", "TFUNCTION", NULL);
+			/*lua_pushnumber(L, r_luaL_ref(rL, LUA_REGISTRYINDEX));
+			lua_pushcclosure(L, (lua_CFunction)functionhandler, 1);*/  
+			r_lua_pushvalue(rL, index);
 			lua_pushnumber(L, r_luaL_ref(rL, LUA_REGISTRYINDEX));
-			lua_pushcclosure(L, (lua_CFunction)functionhandler, 1);  
-			MessageBoxA(NULL, "TFUNCTION F", "TFUNCTION F", NULL);
+			lua_pushcclosure(L, vanillaFunctionBridge, 1);
+			//MessageBoxA(NULL, "TFUNCTION F", "TFUNCTION F", NULL);
 			break;
 		case R_LUA_TTABLE:
-			MessageBoxA(NULL, "TTABLE", "TTABLE", NULL);
+			//MessageBoxA(NULL, "TTABLE", "TTABLE", NULL);
 			r_lua_pushvalue(rL, index);
 			lua_newtable(L);
 			r_lua_pushnil(rL);
@@ -213,10 +228,10 @@ namespace Bridge
 				r_lua_pop(rL, 1);
 			}
 			r_lua_pop(rL, 1);
-			MessageBoxA(NULL, "TTABLE F ", "TTABLE F ", NULL);
+			//MessageBoxA(NULL, "TTABLE F ", "TTABLE F ", NULL);
 			break;
 		case R_LUA_TUSERDATA:
-			MessageBoxA(NULL, "TUSERDATA", "TUSERDATA", NULL);
+			//MessageBoxA(NULL, "TUSERDATA", "TUSERDATA", NULL);
 			r_lua_pushvalue(rL, index);
 			r_lua_pushstring(rL, std::to_string(++registry).c_str());
 
@@ -232,7 +247,7 @@ namespace Bridge
 			Bridge::push(rL, L, -1);
 			r_lua_pop(rL, 1);
 			lua_setmetatable(L, -2);
-			MessageBoxA(NULL, "TUSERDATA F", "TUSERDATA F", NULL);
+			//MessageBoxA(NULL, "TUSERDATA F", "TUSERDATA F", NULL);
 			break;
 		default: break;
 		}
@@ -250,6 +265,7 @@ namespace Bridge
 
 	int resumea(DWORD thread)
 	{
+		//MessageBoxA(NULL, "resumea", "resumea", NULL);
 		lua_State* L = (lua_State*)r_lua_touserdata(thread, lua_upvalueindex(1));
 		const int nargs = r_lua_gettop(thread);
 		for (int arg = 1; arg <= nargs; ++arg)
@@ -264,7 +280,7 @@ namespace Bridge
 
 	int vanillaFunctionBridge(lua_State* L)
 	{
-		MessageBoxA(NULL, "vanillabridge", "vanillabridge", NULL);
+		//MessageBoxA(NULL, "vanillabridge", "vanillabridge", NULL);
 		r_lua_pushstring(m_rL, std::to_string(++registry).c_str());
 		DWORD rL = r_lua_newthread(m_rL);
 		r_lua_settable(m_rL, LUA_REGISTRYINDEX);
